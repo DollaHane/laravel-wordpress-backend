@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('user_email');
             $table->string('key_name');
             $table->string('key_secret');
+            $table->string('key_secret_short');
             $table->timestamps();
             $table->foreign('user_email')->references('email')->on('users');
         });

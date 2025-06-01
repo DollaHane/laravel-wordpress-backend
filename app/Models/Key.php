@@ -17,6 +17,5 @@ class Key extends Model
     use HasUlids;
 
     protected $table = 'keys';
-    protected $fillable = ['user_id', 'key_name', 'key_secret'];
-    
+    protected $fillable = ['user_email', 'key_name', 'key_secret', 'key_secret_short'];
 }
