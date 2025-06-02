@@ -7,4 +7,5 @@ use App\Http\Controllers\KeysController;
 Route::middleware('auth')->group(function () {
   Route::get('/settings/keys', [KeysController::class, 'index'])->name('keys.index');
   Route::post('/settings/keys', [KeysController::class, 'create'])->name('keys.create');
+  Route::delete('/settings/keys/{id}', [KeysController::class, 'delete'])->name('keys.delete');
 });

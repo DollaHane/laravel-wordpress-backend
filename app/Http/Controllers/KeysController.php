@@ -40,7 +40,7 @@ class KeysController extends Controller
 
     /**
      * _________________________________________________________________
-     * Create the user's profile settings.
+     * Create the user's API key.
      * 
      * @throws \Illuminate\Validation\ValidationException
      */
@@ -67,5 +67,18 @@ class KeysController extends Controller
         $key->key_secret = Hash::make($request->key_secret);
         $key->key_secret_short = substr($request->key_secret, 16);
         $key->save();
+    }
+
+    /**
+     * _________________________________________________________________
+     * Delete user's key.
+     * @param string $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function delete($id)
+    {
+        $key = Key::findOrFail($id);
+        $key->delete();
+        return redirect()->back()->with('success', 'Successfully deleted key.');
     }
 }

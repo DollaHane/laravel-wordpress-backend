@@ -1,13 +1,16 @@
 import HeadingSmall from '@/components/heading-small';
 import InputError from '@/components/input-error';
+import KeyDelete from '@/components/key-delete';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
-import { type BreadcrumbItem, type SharedData } from '@/types';
+import { type BreadcrumbItem } from '@/types';
 import { Transition } from '@headlessui/react';
-import { Head, useForm, usePage } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
+import { Copy } from 'lucide-react';
 import { FormEventHandler, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -33,24 +36,30 @@ type Key = {
 };
 
 export default function ApiKeys({ generatedKey, userKeys }: { generatedKey: string; userKeys: Key[] }) {
-    const { auth } = usePage<SharedData>().props;
+    // const { auth } = usePage<SharedData>().props;
     const [toggleKey, setToggleKey] = useState<boolean>(false);
+    const [copiedText, copy] = useCopyToClipboard();
 
     // USE FORM HOOK
-    const { data, setData, post, reset, errors, processing, recentlySuccessful } = useForm<Required<KeyForm>>({
+    const { data, setData, post, errors, processing, recentlySuccessful } = useForm<Required<KeyForm>>({
         key_name: '',
         key_secret: generatedKey,
     });
 
     // FORM SUBMIT
-    const submit: FormEventHandler = (e) => {
-        e.preventDefault();
+    const submit: FormEventHandler = (event) => {
+        event.preventDefault();
         setToggleKey(false);
         post(route('keys.create'), {
             preserveScroll: true,
         });
         window.location.reload();
     };
+
+    async function handleCopyText(event: Event) {
+        event.preventDefault();
+        await copy(generatedKey);
+    }
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -83,7 +92,20 @@ export default function ApiKeys({ generatedKey, userKeys }: { generatedKey: stri
                             </div>
 
                             <div className="flex flex-col gap-3">
-                                <p className="border-muted rounded-md border p-1 pl-3 font-semibold">{generatedKey}</p>
+                                <div className="relative w-full">
+                                    <p className="border-muted rounded-md border p-1 pl-3 font-semibold">{generatedKey}</p>
+                                    <Button
+                                        type="button"
+                                        variant="icon"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            copy(generatedKey);
+                                        }}
+                                        className="absolute top-2 right-2 size-5 transform duration-75 hover:scale-[1.1] hover:cursor-pointer hover:text-orange-500"
+                                    >
+                                        <Copy className="size-5" />
+                                    </Button>
+                                </div>
                                 <p className="text-muted-foreground text-sm italic">
                                     Save the above key in your Wordpress plugin settings page, this key will not be accessable after you click save.
                                     If you lose this key, a new one will need to be generated.
@@ -126,7 +148,10 @@ export default function ApiKeys({ generatedKey, userKeys }: { generatedKey: stri
                                                 <p className="text-muted-foreground text-sm font-normal italic">{key.key_name}</p>
                                                 <p className="text-muted-foreground text-sm italic">{key.created_at}</p>
                                             </div>
-                                            <p className="text-muted-foreground text-sm italic">****************{key.key_secret_short}</p>
+                                            <div className="flex w-full flex-row justify-between">
+                                                <p className="text-muted-foreground text-sm italic">****************{key.key_secret_short}</p>
+                                                <KeyDelete id={key.id} />
+                                            </div>
                                             <hr />
                                         </div>
                                     );
