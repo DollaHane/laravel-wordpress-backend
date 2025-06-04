@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Key;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
@@ -24,7 +23,7 @@ class KeysController extends Controller
         if (Auth::check()) {
             $user_email = Auth::user()->email;
         } else {
-            return response()->json(["error" => "Unauthorised"], 401);
+            return redirect('/login');
         };
 
         $privateKey = new Ulid();
@@ -47,17 +46,20 @@ class KeysController extends Controller
     public function create(Request $request)
     {
 
-        // $headers = $request->headers->all();
-        // Log::info("Headers:", $headers);
-
         if (Auth::check()) {
             $user_email = Auth::user()->email;
         } else {
-            return response()->json(["error" => "Unauthorised"], 401);
+            return redirect('/login');
         };
 
+        $keys = DB::table('keys')->where('user_email', $user_email)->get();
+
+        if ($keys->isNotEmpty()) {
+            DB::table('keys')->where('user_email', $user_email)->delete();
+        }
+
         $request->validate([
-            'key_name' => 'required|string|max:255',
+            'key_name' => 'bail|required|string|min:5|max:255',
             'key_secret' => 'required|string',
         ]);
 
